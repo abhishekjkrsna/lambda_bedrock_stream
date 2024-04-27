@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: |
+  Sample SAM Template for lambda-bedrock
+Resources:
+  StreamingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 40
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+        Cors:
+          AllowOrigins:
+            - '*'
+          AllowHeaders:
+            - '*'
+          AllowMethods:
+            - POST
+      MemorySize: 128
+      Role: PUT_YOUR_ROLE_ARN_HERE
+
+Outputs:
+  StreamingFunction:
+    Description: Streaming Lambda Function ARN
+    Value: !GetAtt StreamingFunction.Arn
+  StreamingFunctionURL:
+    Description: Streaming Lambda Function URL
+    Value: !GetAtt StreamingFunctionUrl.FunctionUrl
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    LoggingConfig:
+      LogFormat: JSON

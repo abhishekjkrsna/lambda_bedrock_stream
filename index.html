@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Send Data to Server</title>
+</head>
+
+<body>
+    <div>
+        <label for="dataInput">Enter data:</label>
+        <input type="text" id="dataInput" />
+        <button onclick="sendData()">Send Data</button>
+        <div id="streamed-data"></div>
+    </div>
+
+    <script>
+        function sendData() {
+            const dataInput = document.getElementById("dataInput");
+            const inputData = dataInput.value;
+            const streamedData = document.getElementById("streamed-data");
+            streamedData.innerHTML = "";
+            fetch(
+                "PUT_YOUR_LAMBDA_FUNCTION_URL_HERE",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ "prompt": inputData }),
+                }
+            )
+                .then((response) => {
+                    console.log(response.body);
+                    const reader = response.body.getReader();
+
+                    // Read data from the stream
+                    const readData = () => {
+                        return reader.read().then(({ done, value }) => {
+                            if (done) {
+                                console.log("Stream complete");
+                            } else {
+                                streamedData.innerHTML += `${new TextDecoder()
+                                    .decode(value)
+                                    .replace(/\n/g, "<br>")}`;
+                                // Continue reading data
+                                return readData();
+                            }
+                        });
+                    };
+
+                    // Start reading data from the stream
+                    return readData();
+                })
+                .catch((error) => console.error("Error:", error));
+        }
+    </script>
+</body>
+
+</html>
